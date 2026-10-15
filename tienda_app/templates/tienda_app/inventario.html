@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventario</title>
+</head>
+<body>
+    <h1>Inventario</h1>
+    <table border="1" cellpadding="6">
+        <tr><th>ID</th><th>Libro</th><th>Stock</th></tr>
+        {% for inv in inventarios %}
+        <tr>
+            <td>{{ inv.libro.id }}</td>
+            <td>{{ inv.libro.titulo }}</td>
+            <td>{{ inv.cantidad }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

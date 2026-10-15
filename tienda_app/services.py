@@ -45,3 +45,35 @@ class CompraService:
         inv.save()
 
         return orden.total
+
+class CompraRapidaService:
+    """
+    SERVICE LAYER: orquesta la compra rapida.
+    Depende de la abstraccion ProcesadorPago (DIP), no de un banco concreto.
+    """
+
+    def __init__(self, procesador_pago):
+        self.procesador_pago = procesador_pago
+        self.builder = OrdenBuilder()
+
+    def obtener_detalle(self, libro_id):
+        libro = get_object_or_404(Libro, id=libro_id)
+        total = CalculadorImpuestos.obtener_total_con_iva(libro.precio)
+        return {"libro": libro, "total": total}
+
+    def procesar(self, libro_id):
+        libro = get_object_or_404(Libro, id=libro_id)
+        inv = get_object_or_404(Inventario, libro=libro)
+
+        if inv.cantidad <= 0:
+            raise ValueError("No hay existencias.")
+
+        orden = self.builder.con_libro(libro).build()
+
+        if self.procesador_pago.pagar(orden.total):
+            inv.cantidad -= 1
+            inv.save()
+            return orden.total
+
+        orden.delete()
+        return None
